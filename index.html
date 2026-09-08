@@ -1,0 +1,753 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Medve Matek Gyakorló</title>
+<link rel="icon" href="data:,">
+<style>
+  html, body { margin: 0; padding: 0; background: #10241C; min-height: 100vh; }
+  #root { min-height: 100vh; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+
+<script type="text/babel" data-type="module">
+const { useState, useEffect, useRef, useMemo } = React;
+
+// ---------------------------------------------------------------------------
+// Feladatbank — Medve Matek stílusú logikai rejtvények, nehezedő sorrendben.
+// Minden feladatnak rövid válasza van (szám vagy szó), indoklás nem kell,
+// pontosan úgy, ahogy az igazi Medve Szabadtéri Matekversenyen.
+// ---------------------------------------------------------------------------
+const QUESTIONS = [
+  {
+    id: 0,
+    tier: "bronz",
+    prompt:
+      "Öt mackó ül egy padon, balról jobbra 1-től 5-ig megszámozva. Barnapracli a 2-es helyen ül. Ő és a jobb oldali szomszédja helyet cserél. Hányadik helyen ül ezután Barnapracli?",
+    accepted: ["3"],
+    explanation:
+      "Barnapracli a 2. helyen ült, a jobb szomszédja a 3. helyen. Csere után Barnapracli kerül a 3. helyre.",
+  },
+  {
+    id: 1,
+    tier: "bronz",
+    prompt:
+      "A reggelinél minden mackó 3 kanál mézet kap. 8 mackó reggelizik együtt. Hány kanál mézet esznek meg összesen?",
+    accepted: ["24"],
+    explanation: "8 mackó, fejenként 3 kanál: 8 × 3 = 24 kanál méz.",
+  },
+  {
+    id: 2,
+    tier: "bronz",
+    prompt:
+      "Dörmögő a földről (0. fok) indulva mászik fel egy lépcsőn. Minden lépésben 2 fokot lép. Hányadik lépcsőfokon áll 5 lépés után?",
+    accepted: ["10"],
+    explanation: "5 lépés, lépésenként 2 fok: 5 × 2 = 10. fok.",
+  },
+  {
+    id: 3,
+    tier: "bronz",
+    prompt:
+      "Négy bocs állt sorba magasság szerint, a legkisebbtől a legnagyobbig. Pluszka a harmadik helyen áll a sorban. Hány bocs magasabb nála?",
+    accepted: ["1"],
+    explanation:
+      "A sorban 4 bocs áll növekvő magasság szerint, Pluszka a 3. Csak a 4. helyen álló bocs magasabb nála, tehát 1.",
+  },
+  {
+    id: 4,
+    tier: "ezüst",
+    prompt:
+      "A tisztáson maci-bocsok (4 lábuk van) és bagolyfiókák (2 lábuk van) játszanak. Összesen 9 állat van ott, és együtt 28 lábuk van. Hány maci-bocs van a tisztáson?",
+    accepted: ["5"],
+    explanation:
+      "Ha mind a 9 állat bagolyfióka lenne, 18 láb lenne. A hiányzó 10 lábat 2-esével pótolják a bocsok (4 helyett 2 lábat számoltunk nekik), 10 ÷ 2 = 5 bocs.",
+  },
+  {
+    id: 5,
+    tier: "ezüst",
+    prompt:
+      "A famentős versenyen a rajtszámok sorozata: 3, 7, 11, 15, ... Mindig 4-gyel nő a következő szám. Melyik szám lesz a sorozat 8. tagja?",
+    accepted: ["31"],
+    explanation: "Az 1. tag 3, minden további taghoz 4 adódik: 3 + 7 × 4 = 31.",
+  },
+  {
+    id: 6,
+    tier: "ezüst",
+    prompt:
+      "Morgó mackónak két bocsa van. Koruk különbsége 3 év, együtt 11 évesek. Hány éves az idősebbik bocs?",
+    accepted: ["7"],
+    explanation:
+      "Ha az idősebb x, a fiatalabb x−3, összegük 11: x + x − 3 = 11, 2x = 14, x = 7.",
+  },
+  {
+    id: 7,
+    tier: "ezüst",
+    prompt:
+      "Egy 4×4-es famintás takarón sakktáblaszerűen váltakozik a barna és a fehér kocka (a bal felső sarok barna). Hány barna kocka van a takarón összesen?",
+    accepted: ["8"],
+    explanation:
+      "16 kockából pontosan a fele barna, mert a sakktábla-mintában soronként felváltva következnek: 16 ÷ 2 = 8.",
+  },
+  {
+    id: 8,
+    tier: "arany",
+    prompt:
+      "Egy sötét fahídon csak egyszerre 2 mackó fér el, és mindig csak egyetlen lámpájuk van, amit oda-vissza kell vinni. Totó 1, Maci 2, Bocsi 5, Öreg Brumi 8 perc alatt kel át egyedül (páros átkelésnél a lassabbik tempójában haladnak). Legalább hány perc alatt juthat át mind a négyen a hídon?",
+    accepted: ["15"],
+    explanation:
+      "Totó (1) és Maci (2) átmennek: 2 perc. Totó visszamegy a lámpával: 1 perc. Bocsi (5) és Brumi (8) átmennek: 8 perc. Maci visszamegy: 2 perc. Totó és Maci átmennek: 2 perc. Összesen: 2+1+8+2+2 = 15 perc.",
+  },
+  {
+    id: 9,
+    tier: "arany",
+    prompt:
+      "9 egyforma mézesbödön közül pontosan az egyik könnyebb a többinél. Egy kétkarú mérleggel legalább hányszor kell mérni, hogy biztosan megtaláljuk a könnyebb bödönt?",
+    accepted: ["2"],
+    explanation:
+      "A 9 bödönt 3 db 3-as csoportra osztva egy méréssel kiderül, melyik csoportban van a könnyebb. Azt a 3-at újra mérve (1 db a másik ellen) egy második méréssel megtaláljuk. Összesen 2 mérés elég.",
+  },
+  {
+    id: 10,
+    tier: "arany",
+    prompt:
+      "Totó minden nap kétszer annyi epret szed, mint előző nap. Hétfőn (1. nap) 3 epret szedett. Hányadik napon szedi meg először a 90-nél is több epret?",
+    accepted: ["6", "szombat"],
+    explanation:
+      "A napi mennyiség: 3, 6, 12, 24, 48, 96... A 6. napon (szombaton) éri el először a 90-nél többet, hiszen 96 > 90.",
+  },
+  {
+    id: 11,
+    tier: "arany",
+    prompt:
+      "Négy bocs futott versenyt: Maci, Bocs, Totó és Pamacs. Tudjuk: Maci nem lett első. Totó megelőzte Bocsot. Maci megelőzte Totót. Pamacs megelőzte Macit. Ki lett az első helyezett?",
+    accepted: ["pamacs"],
+    explanation:
+      "A feltételekből a sorrend: Pamacs > Maci > Totó > Bocs. Az első helyezett tehát Pamacs.",
+  },
+];
+
+const TIER_ORDER = ["bronz", "ezüst", "arany"];
+
+const PACKAGES = [
+  {
+    key: "gyors",
+    label: "Gyors kör",
+    description: "6 feladat, minden szintből kettő, véletlenszerűen sorsolva",
+    minutes: 10,
+    perTier: 2,
+  },
+  {
+    key: "kozepes",
+    label: "Közepes kör",
+    description: "9 feladat, minden szintből három, véletlenszerűen sorsolva",
+    minutes: 20,
+    perTier: 3,
+  },
+  {
+    key: "teljes",
+    label: "Teljes verseny",
+    description: "Mind a 12 feladat, véletlenszerű sorrendben szintenként",
+    minutes: 35,
+    perTier: 4,
+  },
+];
+
+const TIER_LABEL = { bronz: "Bronzszint", ezüst: "Ezüstszint", arany: "Aranyszint" };
+const TIER_COLOR = { bronz: "#B08159", ezüst: "#AFC3B8", arany: "#E8A33D" };
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function pickQuestions(perTier) {
+  return TIER_ORDER.flatMap((tier) => {
+    const pool = QUESTIONS.filter((q) => q.tier === tier);
+    return shuffle(pool).slice(0, perTier);
+  });
+}
+
+function normalize(str) {
+  return str
+    .normalize("NFC")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .replace(/[.,!?]/g, "");
+}
+
+function formatTime(totalSeconds) {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
+function PawIcon({ state, size = 18 }) {
+  // state: 'pending' | 'correct' | 'incorrect' | 'current'
+  const fill =
+    state === "correct" ? "#9CC168" : state === "incorrect" ? "#C4453A" : state === "current" ? "#E8A33D" : "none";
+  const stroke = state === "pending" ? "#5C7A6A" : fill;
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke={stroke} strokeWidth="1.4">
+      <circle cx="12" cy="15.5" r="5.2" />
+      <circle cx="5.5" cy="9" r="2.1" />
+      <circle cx="10.2" cy="5.3" r="2.1" />
+      <circle cx="15.4" cy="5.3" r="2.1" />
+      <circle cx="19.3" cy="9.2" r="2.1" />
+    </svg>
+  );
+}
+
+function RankBadge({ rank }) {
+  return (
+    <div
+      style={{
+        width: 128,
+        height: 128,
+        margin: "0 auto 18px",
+        position: "relative",
+        clipPath:
+          "polygon(50% 0%, 90% 12%, 100% 50%, 90% 88%, 50% 100%, 10% 88%, 0% 50%, 10% 12%)",
+        background: `linear-gradient(155deg, ${rank.color} 0%, ${rank.colorDark} 100%)`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        boxShadow: "0 10px 24px rgba(0,0,0,0.35)",
+        animation: "medal-pop 0.5s cubic-bezier(.2,1.4,.4,1)",
+      }}
+    >
+      <PawIcon state="correct" size={56} />
+    </div>
+  );
+}
+
+function MedveMatekGyakorlo() {
+  const [stage, setStage] = useState("start");
+  const [pkg, setPkg] = useState(null);
+  const [questions, setQuestions] = useState([]);
+  const [index, setIndex] = useState(0);
+  const [inputValue, setInputValue] = useState("");
+  const [answers, setAnswers] = useState([]); // { id, given, isCorrect }
+  const [feedback, setFeedback] = useState(null); // { isCorrect, explanation }
+  const [secondsLeft, setSecondsLeft] = useState(0);
+  const intervalRef = useRef(null);
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (stage !== "quiz") {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      return;
+    }
+    intervalRef.current = setInterval(() => {
+      setSecondsLeft((s) => {
+        if (s <= 1) {
+          clearInterval(intervalRef.current);
+          finishQuiz(true);
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
+    return () => clearInterval(intervalRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage]);
+
+  useEffect(() => {
+    if (stage === "quiz" && !feedback && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [stage, index, feedback]);
+
+  function startQuiz(selectedPkg) {
+    const selected = pickQuestions(selectedPkg.perTier);
+    setPkg(selectedPkg);
+    setQuestions(selected);
+    setIndex(0);
+    setAnswers([]);
+    setFeedback(null);
+    setInputValue("");
+    setSecondsLeft(selectedPkg.minutes * 60);
+    setStage("quiz");
+  }
+
+  function submitAnswer() {
+    if (feedback) return;
+    const q = questions[index];
+    const given = inputValue;
+    const isCorrect = q.accepted.some((a) => normalize(a) === normalize(given));
+    setAnswers((prev) => [...prev, { id: q.id, given, isCorrect }]);
+    setFeedback({ isCorrect, explanation: q.explanation });
+  }
+
+  function nextQuestion() {
+    if (index + 1 >= questions.length) {
+      finishQuiz(false);
+      return;
+    }
+    setIndex((i) => i + 1);
+    setInputValue("");
+    setFeedback(null);
+  }
+
+  function finishQuiz(timedOut) {
+    setAnswers((prev) => {
+      let next = prev;
+      if (timedOut && prev.length < questions.length) {
+        const missing = questions.slice(prev.length).map((q) => ({ id: q.id, given: "", isCorrect: false }));
+        next = [...prev, ...missing];
+      }
+      return next;
+    });
+    setStage("result");
+  }
+
+  const correctCount = answers.filter((a) => a.isCorrect).length;
+  const total = questions.length;
+  const pct = total > 0 ? correctCount / total : 0;
+
+  const rank = useMemo(() => {
+    if (pct >= 0.9) return { name: "Aranymedve", color: "#F3C468", colorDark: "#C98A1F", note: "Kimagasló teljesítmény, szinte minden csapdát elkerültél." };
+    if (pct >= 0.7) return { name: "Ezüstmedve", color: "#DCE6DF", colorDark: "#8FA79A", note: "Nagyon szép munka, már csak néhány trükkön csúsztál el." };
+    if (pct >= 0.4) return { name: "Bronzmedve", color: "#C98A56", colorDark: "#8A5A34", note: "Szilárd alapok, egy kis gyakorlással simán feljebb léphetsz." };
+    return { name: "Ébredő bocs", color: "#8FAF9B", colorDark: "#4F6B5A", note: "Ez volt a bemelegítés. Nézd át a magyarázatokat, és próbáld újra!" };
+  }, [pct]);
+
+  return (
+    <div style={styles.page}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap');
+        .mm-root { font-family: 'Nunito', sans-serif; }
+        .mm-heading { font-family: 'Fredoka', sans-serif; }
+        @keyframes medal-pop {
+          0% { transform: scale(0.4) rotate(-8deg); opacity: 0; }
+          100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        .mm-btn { transition: transform 0.12s ease, box-shadow 0.12s ease; }
+        .mm-btn:hover { transform: translateY(-1px); }
+        .mm-btn:active { transform: translateY(0px) scale(0.98); }
+        .mm-input:focus { outline: 2px solid #E8A33D; outline-offset: 2px; }
+        .mm-card-choice:focus-visible { outline: 2px solid #E8A33D; outline-offset: 2px; }
+      `}</style>
+      <div className="mm-root" style={styles.container}>
+        {stage === "start" && <StartScreen onStart={startQuiz} />}
+        {stage === "quiz" && questions.length > 0 && (
+          <QuizScreen
+            questions={questions}
+            index={index}
+            secondsLeft={secondsLeft}
+            answers={answers}
+            inputValue={inputValue}
+            setInputValue={setInputValue}
+            feedback={feedback}
+            onSubmit={submitAnswer}
+            onNext={nextQuestion}
+            inputRef={inputRef}
+          />
+        )}
+        {stage === "result" && (
+          <ResultScreen
+            rank={rank}
+            correctCount={correctCount}
+            total={total}
+            answers={answers}
+            questions={questions}
+            onRestart={() => setStage("start")}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function StartScreen({ onStart }) {
+  return (
+    <div>
+      <div style={{ textAlign: "center", marginBottom: 28 }}>
+        <div style={styles.pawRow}>
+          <PawIcon state="correct" size={22} />
+          <PawIcon state="current" size={26} />
+          <PawIcon state="correct" size={22} />
+        </div>
+        <h1 className="mm-heading" style={styles.title}>
+          Medve Matek Gyakorló
+        </h1>
+        <p style={styles.subtitle}>
+          Gondolkodtató feladatok 4. osztályosoknak, ugyanabban a szellemben, mint az igazi
+          Medve Szabadtéri Matekversenyen.
+        </p>
+      </div>
+
+      <div style={styles.infoCard}>
+        <p style={styles.infoText}>
+          Minden feladat válasza egy rövid szám vagy szó. Indoklást nem kell írni, csak a
+          megoldást. A feladatok szintenként nehezednek: bronz, ezüst, majd arany.
+        </p>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 20 }}>
+        {PACKAGES.map((p) => (
+          <button
+            key={p.key}
+            className="mm-btn mm-card-choice"
+            onClick={() => onStart(p)}
+            style={styles.packageButton}
+          >
+            <div>
+              <div className="mm-heading" style={styles.packageTitle}>{p.label}</div>
+              <div style={styles.packageDesc}>{p.description}</div>
+            </div>
+            <div style={styles.packageTime}>{p.minutes} perc</div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function QuizScreen({ questions, index, secondsLeft, answers, inputValue, setInputValue, feedback, onSubmit, onNext, inputRef }) {
+  const q = questions[index];
+  const lowTime = secondsLeft <= 30;
+
+  return (
+    <div>
+      <div style={styles.quizHeader}>
+        <div style={styles.pawTrail}>
+          {questions.map((qq, i) => {
+            let state = "pending";
+            if (i < answers.length) state = answers[i].isCorrect ? "correct" : "incorrect";
+            else if (i === index) state = "current";
+            return <PawIcon key={qq.id} state={state} size={16} />;
+          })}
+        </div>
+        <div style={{ ...styles.timerChip, ...(lowTime ? styles.timerChipLow : {}) }}>
+          {formatTime(secondsLeft)}
+        </div>
+      </div>
+
+      <div style={styles.tierRow}>
+        <span style={{ ...styles.tierBadge, background: TIER_COLOR[q.tier] }}>
+          {TIER_LABEL[q.tier]}
+        </span>
+        <span style={styles.progressText}>
+          {index + 1}. / {questions.length} feladat
+        </span>
+      </div>
+
+      <div style={styles.questionCard}>
+        <p style={styles.questionText}>{q.prompt}</p>
+      </div>
+
+      {!feedback ? (
+        <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
+          <input
+            ref={inputRef}
+            className="mm-input"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") onSubmit();
+            }}
+            placeholder="A válaszod..."
+            style={styles.input}
+          />
+          <button className="mm-btn" onClick={onSubmit} style={styles.primaryButton}>
+            Beküld
+          </button>
+        </div>
+      ) : (
+        <div
+          style={{
+            ...styles.feedbackCard,
+            borderColor: feedback.isCorrect ? "#9CC168" : "#C4453A",
+          }}
+        >
+          <div className="mm-heading" style={{ ...styles.feedbackTitle, color: feedback.isCorrect ? "#9CC168" : "#E39289" }}>
+            {feedback.isCorrect ? "Ez az, eltaláltad!" : "Ezúttal nem jött össze."}
+          </div>
+          <p style={styles.feedbackText}>{feedback.explanation}</p>
+          <button className="mm-btn" onClick={onNext} style={styles.primaryButton}>
+            {index + 1 >= questions.length ? "Eredmény megtekintése" : "Következő feladat"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ResultScreen({ rank, correctCount, total, answers, questions, onRestart }) {
+  return (
+    <div>
+      <div style={{ textAlign: "center" }}>
+        <RankBadge rank={rank} />
+        <h2 className="mm-heading" style={styles.resultRank}>{rank.name}</h2>
+        <p style={styles.resultScore}>
+          {correctCount} / {total} feladat helyes
+        </p>
+        <p style={styles.resultNote}>{rank.note}</p>
+      </div>
+
+      <div style={{ marginTop: 26 }}>
+        <h3 className="mm-heading" style={styles.reviewHeading}>Áttekintés</h3>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {questions.map((q, i) => {
+            const a = answers[i];
+            return (
+              <div key={q.id} style={styles.reviewRow}>
+                <PawIcon state={a?.isCorrect ? "correct" : "incorrect"} size={18} />
+                <div style={{ flex: 1 }}>
+                  <div style={styles.reviewPrompt}>{q.prompt}</div>
+                  <div style={styles.reviewMeta}>
+                    A te válaszod: <strong>{a?.given ? a.given : "(nincs válasz)"}</strong>
+                    {!a?.isCorrect && (
+                      <>
+                        {" "}
+                        · Helyes: <strong>{q.accepted[0]}</strong>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <button className="mm-btn" onClick={onRestart} style={{ ...styles.primaryButton, width: "100%", marginTop: 24 }}>
+        Új kör indítása
+      </button>
+    </div>
+  );
+}
+
+const styles = {
+  page: {
+    minHeight: "100%",
+    background:
+      "radial-gradient(ellipse at 50% -10%, #23503D 0%, #163126 55%, #10241C 100%)",
+    padding: "24px 14px",
+    display: "flex",
+    justifyContent: "center",
+  },
+  container: {
+    width: "100%",
+    maxWidth: 460,
+  },
+  pawRow: {
+    display: "flex",
+    justifyContent: "center",
+    gap: 6,
+    marginBottom: 10,
+  },
+  title: {
+    color: "#F6EFDD",
+    fontSize: 30,
+    fontWeight: 600,
+    margin: "0 0 10px",
+    letterSpacing: "-0.01em",
+  },
+  subtitle: {
+    color: "#B9CBBF",
+    fontSize: 15,
+    lineHeight: 1.5,
+    maxWidth: 380,
+    margin: "0 auto",
+  },
+  infoCard: {
+    background: "rgba(246,239,221,0.06)",
+    border: "1px solid rgba(246,239,221,0.14)",
+    borderRadius: 14,
+    padding: "14px 16px",
+  },
+  infoText: {
+    color: "#D8E3DA",
+    fontSize: 14,
+    lineHeight: 1.55,
+    margin: 0,
+  },
+  packageButton: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "100%",
+    textAlign: "left",
+    background: "#1E4534",
+    border: "1px solid rgba(246,239,221,0.16)",
+    borderRadius: 14,
+    padding: "16px 18px",
+    cursor: "pointer",
+  },
+  packageTitle: {
+    color: "#F6EFDD",
+    fontSize: 17,
+    fontWeight: 600,
+  },
+  packageDesc: {
+    color: "#A9BFB1",
+    fontSize: 13,
+    marginTop: 3,
+  },
+  packageTime: {
+    color: "#E8A33D",
+    fontFamily: "'Fredoka', sans-serif",
+    fontSize: 15,
+    fontWeight: 600,
+    whiteSpace: "nowrap",
+  },
+  quizHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  pawTrail: {
+    display: "flex",
+    gap: 5,
+    flexWrap: "wrap",
+    maxWidth: 260,
+  },
+  timerChip: {
+    fontFamily: "'Fredoka', sans-serif",
+    color: "#F6EFDD",
+    background: "rgba(246,239,221,0.1)",
+    border: "1px solid rgba(246,239,221,0.2)",
+    borderRadius: 999,
+    padding: "5px 14px",
+    fontSize: 15,
+    fontWeight: 600,
+  },
+  timerChipLow: {
+    background: "rgba(196,69,58,0.25)",
+    borderColor: "#C4453A",
+    color: "#F6D9D6",
+  },
+  tierRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  tierBadge: {
+    fontSize: 12,
+    fontWeight: 700,
+    color: "#1B3B2F",
+    padding: "4px 10px",
+    borderRadius: 999,
+  },
+  progressText: {
+    color: "#9FB6A7",
+    fontSize: 13,
+  },
+  questionCard: {
+    background: "#F6EFDD",
+    borderRadius: 16,
+    padding: "22px 20px",
+    boxShadow: "0 8px 20px rgba(0,0,0,0.22)",
+  },
+  questionText: {
+    color: "#26382E",
+    fontSize: 16,
+    lineHeight: 1.6,
+    margin: 0,
+  },
+  input: {
+    flex: 1,
+    background: "#F6EFDD",
+    border: "2px solid transparent",
+    borderRadius: 12,
+    padding: "12px 14px",
+    fontSize: 16,
+    fontFamily: "'Nunito', sans-serif",
+    color: "#26382E",
+  },
+  primaryButton: {
+    background: "#E8A33D",
+    color: "#1B3B2F",
+    border: "none",
+    borderRadius: 12,
+    padding: "12px 18px",
+    fontSize: 15,
+    fontWeight: 700,
+    fontFamily: "'Fredoka', sans-serif",
+    cursor: "pointer",
+  },
+  feedbackCard: {
+    marginTop: 18,
+    background: "rgba(246,239,221,0.06)",
+    border: "1.5px solid",
+    borderRadius: 14,
+    padding: "16px 18px",
+  },
+  feedbackTitle: {
+    fontSize: 16,
+    fontWeight: 600,
+    marginBottom: 6,
+  },
+  feedbackText: {
+    color: "#D8E3DA",
+    fontSize: 14,
+    lineHeight: 1.55,
+    margin: "0 0 14px",
+  },
+  resultRank: {
+    color: "#F6EFDD",
+    fontSize: 26,
+    fontWeight: 600,
+    margin: "0 0 6px",
+  },
+  resultScore: {
+    color: "#E8A33D",
+    fontSize: 16,
+    fontWeight: 700,
+    margin: "0 0 8px",
+  },
+  resultNote: {
+    color: "#B9CBBF",
+    fontSize: 14,
+    lineHeight: 1.5,
+    maxWidth: 360,
+    margin: "0 auto",
+  },
+  reviewHeading: {
+    color: "#F6EFDD",
+    fontSize: 16,
+    fontWeight: 600,
+    marginBottom: 10,
+  },
+  reviewRow: {
+    display: "flex",
+    gap: 10,
+    alignItems: "flex-start",
+    background: "rgba(246,239,221,0.05)",
+    border: "1px solid rgba(246,239,221,0.12)",
+    borderRadius: 12,
+    padding: "10px 12px",
+  },
+  reviewPrompt: {
+    color: "#E4ECE6",
+    fontSize: 13.5,
+    lineHeight: 1.5,
+  },
+  reviewMeta: {
+    color: "#9FB6A7",
+    fontSize: 12.5,
+    marginTop: 5,
+  },
+};
+
+const rootEl = document.getElementById("root");
+ReactDOM.createRoot(rootEl).render(React.createElement(MedveMatekGyakorlo));
+
+</script>
+</body>
+</html>

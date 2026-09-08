@@ -131,6 +131,163 @@ const QUESTIONS = [
     explanation:
       "A feltételekből a sorrend: Pamacs > Maci > Totó > Bocs. Az első helyezett tehát Pamacs.",
   },
+  {
+    id: 12,
+    tier: "bronz",
+    prompt:
+      "A mókusraktárban a mogyorókat 4-es kötegekbe csomagolják. 9 teljes köteg van, és marad még 3 szem külön. Hány mogyoró van összesen a raktárban?",
+    accepted: ["39"],
+    explanation: "9 köteg 4 szemmel: 9 × 4 = 36, plusz a külön 3 szem: 36 + 3 = 39.",
+  },
+  {
+    id: 13,
+    tier: "bronz",
+    prompt:
+      "Barnapracli és Pamacs együtt 16 epret szedtek. Barnapracli 4-gyel többet szedett, mint Pamacs. Hány epret szedett Pamacs?",
+    accepted: ["6"],
+    explanation:
+      "Ha Pamacs x epret szedett, Barnapracli x+4-et. Együtt: x + x + 4 = 16, 2x = 12, x = 6.",
+  },
+  {
+    id: 14,
+    tier: "bronz",
+    prompt:
+      "Öt mackó áll sorban egymás mellett. Az első kettő helyet cserél egymással, majd az utolsó kettő is helyet cserél egymással. Hányadik helyen áll ezután az, aki eredetileg a középső, 3. helyen állt?",
+    accepted: ["3"],
+    explanation:
+      "A cserék csak az 1-2. és a 4-5. helyet érintik, a középső, 3. helyen álló mackó helye nem változik.",
+  },
+  {
+    id: 15,
+    tier: "bronz",
+    prompt:
+      "A mackótábor egy 5 napos hetén, hétfőtől péntekig, minden nap 2 órát tanulnak olvasni a bocsok. Hány órát tanulnak összesen a héten?",
+    accepted: ["10"],
+    explanation: "5 nap, naponta 2 óra: 5 × 2 = 10 óra.",
+  },
+  {
+    id: 16,
+    tier: "bronz",
+    prompt:
+      "A mézeskörte fán 24 körte terem. A mackók minden nap leszednek 6 körtét. Hány nap alatt szedik le az összes körtét?",
+    accepted: ["4"],
+    explanation: "24 ÷ 6 = 4 nap alatt fogy el az összes körte.",
+  },
+  {
+    id: 17,
+    tier: "bronz",
+    prompt:
+      "Totó rajtszáma egy kétjegyű, páros szám, amely kisebb, mint 30, és a számjegyeinek összege 9. Mi Totó rajtszáma?",
+    accepted: ["18"],
+    explanation:
+      "A 30-nál kisebb, 9 számjegyösszegű kétjegyű számok: 18 és 27. Ezek közül a páros a 18.",
+  },
+  {
+    id: 18,
+    tier: "ezüst",
+    prompt:
+      "A famászó versenyen 5 mackó indult, mindenki más sorrendben ért célba. Hányféle lehet az első és a második helyezett párosa (a többi három mackó sorrendje nem számít)?",
+    accepted: ["20"],
+    explanation:
+      "Az első helyre 5, a másodikra a maradék 4 mackó közül bárki kerülhet: 5 × 4 = 20 lehetőség.",
+  },
+  {
+    id: 19,
+    tier: "ezüst",
+    prompt:
+      "Totó egy könyvet olvas. Az első nap elolvasta a könyv felét, a második nap a maradék felét, és így még 15 oldal van hátra. Hány oldalas a könyv?",
+    accepted: ["60"],
+    explanation:
+      "A két nap után a könyv negyede maradt (15 oldal), tehát a teljes könyv 15 × 4 = 60 oldalas.",
+  },
+  {
+    id: 20,
+    tier: "ezüst",
+    prompt:
+      "Morgó mackó apja most háromszor annyi idős, mint Morgó. 5 év múlva az apja már csak kétszer lesz annyi idős, mint Morgó. Hány éves Morgó most?",
+    accepted: ["5"],
+    explanation:
+      "Ha Morgó x éves, apja 3x éves. Öt év múlva: 3x + 5 = 2(x + 5), amiből 3x + 5 = 2x + 10, tehát x = 5.",
+  },
+  {
+    id: 21,
+    tier: "ezüst",
+    prompt:
+      "A tisztáson egy sorban ülő 7 mackó közül minden harmadik kap mézeskalácsot, az első mackótól kezdve számolva (vagyis az 1., 4. és 7. mackó). Hány mackó kap mézeskalácsot?",
+    accepted: ["3"],
+    explanation: "Az 1., 4. és 7. mackó kap mézeskalácsot, ez összesen 3 mackó.",
+  },
+  {
+    id: 22,
+    tier: "ezüst",
+    prompt:
+      "Egy dobozban piros és kék golyók vannak, összesen 20 darab. A piros golyók száma pontosan háromszorosa a kék golyók számának. Hány piros golyó van a dobozban?",
+    accepted: ["15"],
+    explanation:
+      "Ha a kék golyók száma k, a piros 3k. Együtt: k + 3k = 20, 4k = 20, k = 5, tehát a piros golyók száma 3 × 5 = 15.",
+  },
+  {
+    id: 23,
+    tier: "ezüst",
+    prompt:
+      "A mackótábor kirándulásán minden gyerek kap 2 szelet almát és 1 szelet körtét. Összesen 27 gyümölcsszeletet osztottak ki. Hány gyerek volt a kiránduláson?",
+    accepted: ["9"],
+    explanation: "Fejenként 3 szelet jut (2 alma + 1 körte), 27 ÷ 3 = 9 gyerek.",
+  },
+  {
+    id: 24,
+    tier: "arany",
+    prompt:
+      "Morgó mackónak egy csónakon át kell vinnie a folyó túlpartjára egy rókát, egy libát és egy zsák kukoricát. A csónakon Morgón kívül csak egy dolog fér el egyszerre. A róka nem maradhat felügyelet nélkül a libával (megenné), és a liba nem maradhat felügyelet nélkül a kukoricával (megenné), de a róka és a kukorica nyugodtan maradhat együtt. Legkevesebb hány átkelés (Morgó oda- és visszaútjai együtt) kell ahhoz, hogy mindhármat biztonságban átvigye?",
+    accepted: ["7"],
+    explanation:
+      "A megoldás: liba át, Morgó vissza üresen, róka át és liba vissza, kukorica át, Morgó vissza üresen, liba át. Ez összesen 7 átkelés.",
+  },
+  {
+    id: 25,
+    tier: "arany",
+    prompt:
+      "12 egyforma játékmogyoró közül pontosan egy hamis, ez lehet könnyebb vagy nehezebb is a többinél, de nem tudjuk, melyik és melyik irányba tér el. Egy kétkarú mérleggel legalább hányszor kell mérni ahhoz, hogy biztosan megtaláljuk a hamis mogyorót, és azt is kiderítsük, könnyebb vagy nehezebb-e?",
+    accepted: ["3"],
+    explanation:
+      "A mogyorókat 4-es csoportokra osztva, ügyesen megválasztott mérésekkel 3 méréssel mindig kideríthető, melyik a hamis és hogy könnyebb vagy nehezebb.",
+  },
+  {
+    id: 26,
+    tier: "arany",
+    prompt:
+      "Egy számsorozatban minden tag az előző kettő összege: 2, 3, 5, 8, 13, ... Melyik szám lesz a sorozat 10. tagja?",
+    accepted: ["144"],
+    explanation:
+      "A sorozat: 2, 3, 5, 8, 13, 21, 34, 55, 89, 144. A 10. tag tehát 144.",
+  },
+  {
+    id: 27,
+    tier: "arany",
+    prompt:
+      "Egy erdei sakkversenyen minden mackó pontosan egyszer játszik minden másik mackóval. Összesen 21 mérkőzést játszottak le. Hány mackó vett részt a versenyen?",
+    accepted: ["7"],
+    explanation:
+      "n mackó esetén a mérkőzések száma n×(n−1)/2. Ez 21-gyel egyenlő, ha n = 7, mert 7×6/2 = 21.",
+  },
+  {
+    id: 28,
+    tier: "arany",
+    prompt:
+      "Totó egy dobozba tesz néhány mogyorót. Ha 3-asával csoportosítja őket, 2 marad ki. Ha 5-ösével csoportosítja, 4 marad ki. Tudjuk, hogy 20-nál több, de 40-nél kevesebb mogyoró van a dobozban. Hány mogyoró van benne?",
+    accepted: ["29"],
+    explanation:
+      "A 20 és 40 közötti, 5-tel osztva 4 maradékot adó számok: 24, 29, 34, 39. Ezek közül csak a 29 ad 3-mal osztva 2 maradékot.",
+  },
+  {
+    id: 29,
+    tier: "arany",
+    prompt:
+      "A mackók titkosírással üzennek: minden betűt az ábécében utána következő betűre cserélnek (A helyett B, B helyett C, és így tovább, Z helyett A). A titkosított üzenet: NBDJ. Mi az eredeti szó?",
+    accepted: ["maci"],
+    explanation:
+      "Ha minden betűt eggyel visszalépünk az ábécében: N→M, B→A, D→C, J→I, az eredeti szó MACI.",
+  },
 ];
 
 const TIER_ORDER = ["bronz", "ezüst", "arany"];
@@ -146,16 +303,16 @@ const PACKAGES = [
   {
     key: "kozepes",
     label: "Közepes kör",
-    description: "9 feladat, minden szintből három, véletlenszerűen sorsolva",
+    description: "12 feladat, minden szintből négy, véletlenszerűen sorsolva",
     minutes: 20,
-    perTier: 3,
+    perTier: 4,
   },
   {
     key: "teljes",
     label: "Teljes verseny",
-    description: "Mind a 12 feladat, véletlenszerű sorrendben szintenként",
+    description: "18 feladat, minden szintből hat, véletlenszerűen sorsolva",
     minutes: 35,
-    perTier: 4,
+    perTier: 6,
   },
 ];
 

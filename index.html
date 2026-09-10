@@ -523,6 +523,7 @@ function MedveMatekGyakorlo() {
           />
         )}
       </div>
+      <div style={styles.footer}>Készítette: Ambrus Viktória Kamilla</div>
     </div>
   );
 }
@@ -694,11 +695,22 @@ const styles = {
       "radial-gradient(ellipse at 50% -10%, #23503D 0%, #163126 55%, #10241C 100%)",
     padding: "24px 14px",
     display: "flex",
-    justifyContent: "center",
+    flexDirection: "column",
+    alignItems: "center",
   },
   container: {
     width: "100%",
     maxWidth: 460,
+  },
+  footer: {
+    width: "100%",
+    maxWidth: 460,
+    textAlign: "center",
+    color: "#5C7A6A",
+    fontSize: 12.5,
+    letterSpacing: "0.02em",
+    marginTop: 32,
+    paddingTop: 16,
   },
   pawRow: {
     display: "flex",
